@@ -1,6 +1,14 @@
+/*
+This is the eqivalent of CRUD actions.
+ex:  express action
+app.get('/', (req, res) => {
+    res.send("GET Request Called")
+})
+*/
+
 "use server"
 
-import { ZodIntersection, z } from "zod"
+import { z } from "zod"
 
 import { LoginSchema } from "@/schemas"
 
