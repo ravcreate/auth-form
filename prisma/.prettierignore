@@ -1,0 +1,2 @@
+# Ignore all Prisma Files
+**/*.prisma

@@ -13,36 +13,36 @@ import authConfig from "./auth.config"
 const { auth } = NextAuth(authConfig)
 
 import {
-  DEFAULT_LOGIN_REDIRECT,
-  apiAuthPrefix,
-  authRoutes,
-  publicRoutes,
+    DEFAULT_LOGIN_REDIRECT,
+    apiAuthPrefix,
+    authRoutes,
+    publicRoutes,
 } from "@/routes"
 
 /** This function can be marked `async` if using `await` inside */
 export default auth((req) => {
-  const { nextUrl } = req
-  const isLoggedIn = !!req.auth //!! turns var into a boolean
-  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname)
+    const { nextUrl } = req
+    const isLoggedIn = !!req.auth //!! turns var into a boolean
+    const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
+    const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
+    const isAuthRoute = authRoutes.includes(nextUrl.pathname)
 
-  if (isApiAuthRoute) {
-    return
-  }
+    if (isApiAuthRoute) {
+        return
+    }
 
-  if (isAuthRoute) {
-    if (isLoggedIn) {
-      /**    Pass in nextUrl to turn it into an absolute pathne */
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+    if (isAuthRoute) {
+        if (isLoggedIn) {
+            /**    Pass in nextUrl to turn it into an absolute pathne */
+            return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+        }
+        return
+    }
+
+    if (!isLoggedIn && !isPublicRoute) {
+        return Response.redirect(new URL("/auth/login", nextUrl))
     }
     return
-  }
-
-  if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL("/auth/login", nextUrl))
-  }
-  return
 })
 
 /**
@@ -50,6 +50,6 @@ export default auth((req) => {
  *   Having a catch all regex allows you to not have to write down every route, ex: matcher
  */
 export const config = {
-  //ex: matcher: [''/about/path']
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+    //ex: matcher: [''/about/path']
+    matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 }
