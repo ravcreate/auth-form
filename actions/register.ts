@@ -1,13 +1,3 @@
-/*
-This is the eqivalent of CRUD actions.
-ex:  express action
-
-app.get('/', (req, res) => {
-    res.send("GET Request Called")
-})
-
-*/
-
 "use server"
 
 import { z } from "zod"
@@ -16,6 +6,8 @@ import { db } from "@/lib/db"
 import { getUserByEmail } from "@/data/user"
 
 import { RegisterSchema } from "@/schemas"
+import { generateVerificationToken } from "@/lib/tokens"
+import { sendVerificationEmail } from "@/lib/mail"
 
 const salt = 10
 
@@ -44,9 +36,14 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         },
     })
 
-    // TODO: Send verification token email
+    const verificationToken = await generateVerificationToken(email)
+
+    await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token
+    )
 
     return {
-        success: "Account Created!",
+        success: "Confirmation Email sent!",
     }
 }
