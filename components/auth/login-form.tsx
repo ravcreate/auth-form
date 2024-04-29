@@ -8,20 +8,13 @@ import { LoginSchema } from "@/schemas"
 import { login } from "@/actions/login"
 import { useTransition, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import Link from "next/link"
 
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form"
-import { Input } from "../ui/input"
+import { Form } from "@/components/ui/form"
 import { Button } from "../ui/button"
 import { FormError } from "../form-error"
 import { FormSuccess } from "../form-success"
+import { TwoFactorField } from "./two-factor-field"
+import { LoginFields } from "./login-fields"
 
 export const LoginForm = () => {
     const searchParams = useSearchParams()
@@ -33,6 +26,7 @@ export const LoginForm = () => {
     const [isPending, startTransition] = useTransition()
     const [error, setError] = useState<string | undefined>("")
     const [success, setSuccess] = useState<string | undefined>("")
+    const [showTwoFactor, setShowTwoFactor] = useState(false)
 
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
@@ -47,10 +41,21 @@ export const LoginForm = () => {
         setSuccess("")
 
         startTransition(() => {
-            login(values).then((data) => {
-                setError(data?.error)
-                setSuccess(data?.success)
-            })
+            login(values)
+                .then((data) => {
+                    if (data?.error) {
+                        form.reset()
+                        setError(data.error)
+                    }
+                    if (data?.success) {
+                        form.reset()
+                        setSuccess(data.success)
+                    }
+                    if (data?.twoFactor) {
+                        setShowTwoFactor(true)
+                    }
+                })
+                .catch((error) => setError("Something went wrong."))
         })
     }
 
@@ -65,51 +70,18 @@ export const LoginForm = () => {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6">
                     <div className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            disabled={isPending}
-                                            placeholder="john.doe@example.com"
-                                            type="email"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            disabled={isPending}
-                                            placeholder="******"
-                                            type="password"
-                                        />
-                                    </FormControl>
-                                    <Button
-                                        size="sm"
-                                        variant="link"
-                                        asChild
-                                        className="px-0 font-normal ">
-                                        <Link href="/auth/reset">
-                                            Forgot passord?
-                                        </Link>
-                                    </Button>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        {showTwoFactor && (
+                            <TwoFactorField
+                                control={form.control}
+                                disabled={isPending}
+                            />
+                        )}
+                        {!showTwoFactor && (
+                            <LoginFields
+                                control={form.control}
+                                disabled={isPending}
+                            />
+                        )}
                     </div>
                     <FormError message={error || urlError} />
                     <FormSuccess message={success} />
@@ -117,7 +89,7 @@ export const LoginForm = () => {
                         disabled={isPending}
                         type="submit"
                         className="w-full">
-                        Login
+                        {showTwoFactor ? "Confirm" : "Login"}
                     </Button>
                 </form>
             </Form>

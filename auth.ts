@@ -5,6 +5,7 @@ import authConfig from "./auth.config"
 import { UserRole } from "@prisma/client"
 import { db } from "@/lib/db"
 import { getUserById } from "./data/user"
+import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation"
 
 /**
  *   You can pass custom fields in session token and tokens
@@ -55,7 +56,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             /**  Prevent sign in without email verificatiion */
             if (!existingUser?.emailVerified) return false
 
-            /** TODO: Add 2FA check */
+            /** 2FA Enabled Check */
+            if (existingUser.isTwoFactorEnabled) {
+                const twoFactorConfirmation =
+                    await getTwoFactorConfirmationByUserId(existingUser.id)
+
+                if (!twoFactorConfirmation) return false
+
+                // Delete two factor confirmation for next sign in
+                await db.twoFactorConfirmation.delete({
+                    where: { id: twoFactorConfirmation.id },
+                })
+            }
 
             return true
         },

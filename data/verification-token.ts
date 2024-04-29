@@ -1,8 +1,11 @@
 import { db } from "@/lib/db"
 
 /**
- *  Gets the verification token by the token.
- *  @type {[string]}
+ *  Gets the Verification Token by Token
+ *  @async
+ *  @function getVerificationTokenByToken
+ *  @param {string} token
+ *  @returns {string | null } verificationToken
  */
 export const getVerificationTokenByToken = async (token: string) => {
     try {
@@ -16,8 +19,11 @@ export const getVerificationTokenByToken = async (token: string) => {
 }
 
 /**
- *   Gets the verification token by email.
- *   @type {[string]}
+ *  Gets the Verification Token by Email
+ *  @async
+ *  @function getVerificationTokenByEmail
+ *  @param {string} token
+ *  @returns {string | null } verificationToken
  */
 export const getVerificationTokenByEmail = async (email: string) => {
     try {

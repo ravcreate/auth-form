@@ -5,9 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { ResetSchema } from "@/schemas"
-import { login } from "@/actions/login"
 import { useTransition, useState } from "react"
-import Link from "next/link"
 import { reset } from "@/actions/reset"
 
 import {
