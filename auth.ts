@@ -6,6 +6,7 @@ import { UserRole } from "@prisma/client"
 import { db } from "@/lib/db"
 import { getUserById } from "./data/user"
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation"
+import { getAccountByUserId } from "./data/account"
 
 /**
  *   You can pass custom fields in session token and tokens
@@ -72,11 +73,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return true
         },
         async session({ token, session }) {
+            /**
+             *	The session uses the values fro the JWT Token
+             *   Any upate to the JWT token must also be
+             *   passed here
+             */
             if (token.sub && session.user) {
                 session.user.id = token.sub
             }
             if (token.role && session.user) {
                 session.user.role = token.role as UserRole
+            }
+            if (session.user) {
+                session.user.isTwoFactorEnabled =
+                    token.isTwoFactorEnabled as boolean
+            }
+
+            /**
+             *   Need to also manually assign the values when the user
+             *   updates their settings so that the other compnents
+             *  will also recognize the change
+             */
+            if (session.user) {
+                session.user.name = token.name
+                session.user.email = token.email!
+                session.user.isOAuth = token.isOAuth as boolean
             }
 
             return session
@@ -85,8 +106,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (!token.sub) return token
             const existingUser = await getUserById(token.sub)
 
+            /**
+             *   Extending the user data because these properties may not exist
+             *   Also when the user updates their info, we have to also after manually
+             *   update their token for the other components to recognize the update.
+             */
             if (!existingUser) return token
+            const existingAccount = await getAccountByUserId(existingUser.id)
+
+            token.isOAuth = !!existingAccount // !! turns it into a boolean
+            token.name = existingUser.name
+            token.email = existingUser.email
             token.role = existingUser.role
+            token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled
+
             return token
         },
     },
