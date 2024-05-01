@@ -9,6 +9,7 @@
 
 import NextAuth from "next-auth"
 import authConfig from "./auth.config"
+import { NextResponse } from "next/server"
 
 const { auth } = NextAuth(authConfig)
 
@@ -34,14 +35,34 @@ export default auth((req) => {
     if (isAuthRoute) {
         if (isLoggedIn) {
             /**    Pass in nextUrl to turn it into an absolute pathne */
-            return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+
+            return NextResponse.redirect(
+                new URL(DEFAULT_LOGIN_REDIRECT, nextUrl)
+            )
         }
         return
     }
 
+    /**
+     *   Handles the callback url after logging out
+     *  to remember user's last page
+     */
     if (!isLoggedIn && !isPublicRoute) {
-        return Response.redirect(new URL("/auth/login", nextUrl))
+        let callbackUrl = nextUrl.pathname
+        if (nextUrl.search) {
+            callbackUrl += nextUrl.search
+        }
+        const encodedCallbackUrl = encodeURIComponent(callbackUrl)
+
+        return NextResponse.redirect(
+            new URL(`/auth/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
+        )
     }
+
+    // console.log(
+    //     "--------------------------------------------",
+    //     NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+    // )
     return
 })
 

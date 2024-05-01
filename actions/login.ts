@@ -16,7 +16,10 @@ import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation
 import { generateTwoFactorToken } from "@/lib/tokens"
 import { sendTwoFactorTokenEmail } from "@/lib/mail"
 
-export const login = async (values: z.infer<typeof LoginSchema>) => {
+export const login = async (
+    values: z.infer<typeof LoginSchema>,
+    callbackUrl?: string | null
+) => {
     /** Validate the login data through zod first*/
     const validatedFields = LoginSchema.safeParse(values)
     if (!validatedFields.success) {
@@ -111,7 +114,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         await signIn("credentials", {
             email,
             password,
-            redirectTo: DEFAULT_LOGIN_REDIRECT,
+            redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
         })
     } catch (error) {
         /** Checks if its an AuthError */

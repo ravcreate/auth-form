@@ -18,6 +18,7 @@ import { LoginFields } from "./login-fields"
 
 export const LoginForm = () => {
     const searchParams = useSearchParams()
+    const callbackUrl = searchParams.get("callbackUrl")
     const urlError =
         searchParams.get("error") === "OAuthAccountNotLinked"
             ? "Email already in used with a different provider "
@@ -39,9 +40,10 @@ export const LoginForm = () => {
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
         setError("")
         setSuccess("")
+        console.log()
 
         startTransition(() => {
-            login(values)
+            login(values, callbackUrl)
                 .then((data) => {
                     if (data?.error) {
                         form.reset()
@@ -64,11 +66,13 @@ export const LoginForm = () => {
             headerLabel="Welcome back"
             backButtonLabel="Don't have an account?"
             backButtonHref="/auth/register"
-            showSocial>
+            showSocial
+        >
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6">
+                    className="space-y-6"
+                >
                     <div className="space-y-4">
                         {showTwoFactor && (
                             <TwoFactorField
@@ -88,7 +92,8 @@ export const LoginForm = () => {
                     <Button
                         disabled={isPending}
                         type="submit"
-                        className="w-full">
+                        className="w-full"
+                    >
                         {showTwoFactor ? "Confirm" : "Login"}
                     </Button>
                 </form>

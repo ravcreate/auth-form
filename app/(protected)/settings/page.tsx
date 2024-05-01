@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react"
 import { UserRole } from "@prisma/client"
 import { SettingsSchema } from "@/schemas"
 
-import { useTransition, useState } from "react"
+import { useTransition, useState, useEffect } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { useForm } from "react-hook-form"
 import { Input } from "@/components/ui/input"
@@ -40,7 +40,8 @@ const SettingsPage = () => {
     const [success, setSuccess] = useState<string | undefined>()
     const { update } = useSession()
     const [isPending, startTransition] = useTransition()
-    const user = useCurrentUser()
+
+    let user = useCurrentUser()
 
     const form = useForm<z.infer<typeof SettingsSchema>>({
         resolver: zodResolver(SettingsSchema),
@@ -136,6 +137,7 @@ const SettingsPage = () => {
                                                 for your account
                                             </FormDescription>
                                         </div>
+                                        Field Value: {field.value}
                                         <FormControl>
                                             <Switch
                                                 disabled={isPending}
@@ -149,10 +151,7 @@ const SettingsPage = () => {
                         </div>
                         <FormError message={error} />
                         <FormSuccess message={success} />
-                        <Button
-                            disabled={isPending}
-                            type="submit"
-                        >
+                        <Button disabled={isPending} type="submit">
                             Save
                         </Button>
                     </form>
