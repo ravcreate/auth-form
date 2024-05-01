@@ -13,8 +13,6 @@ import { getUserByEmail } from "./data/user"
 import bcrypt from "bcryptjs"
 
 import { LoginSchema } from "@/schemas"
-import { PiPlaceholder } from "react-icons/pi"
-
 export default {
     providers: [
         Google({
@@ -26,7 +24,7 @@ export default {
             clientSecret: process.env.GITHUB_CLIENT_SECRET,
         }),
         Credentials({
-            async authorize(credentials) {
+            async authorize(credentials): Promise<any> {
                 const validatedFields = LoginSchema.safeParse(credentials)
 
                 if (validatedFields.success) {
